@@ -91,3 +91,45 @@ print(df['tweets'].apply(lambda x:len([word for word in x.lower().split() if wor
 df['stop_words_len']=df['tweets'].apply(lambda x:len([word for word in x.lower().split() if word in stopwords]))
 print('Seeing the sample of the dataframe')
 print(df.sample(5))
+
+## 6. Count Hashtags and Mentions
+print("--"*70)
+print('Creating a column hashtag_count and mentions_count in the dataframe suing regex')
+df['hashtag_counts']=df['tweets'].apply(lambda x:len(re.findall(r'#\w+',x)))# Using re.findall() we give the pattern saying to get the word after '#' character
+df['mentions_count']=df['tweets'].apply(lambda x:len(re.findall(r'@\w+',x)))# Using re.findall() we give the pattern saying to get the word after '@' character
+print(df.head())
+
+print('Check the rows which have hastag_count greater than 0 or mentions_count greater than 0')
+print('--'*70)
+print(df[(df['hashtag_counts']>0) | (df['mentions_count']>0) ])
+
+
+## 7. If numeric digits present in tweets
+print('--'*70)
+print('Checking whether if integer data is present in tweets')
+# Using re.findall() we can get the match and then we can count the number of times it is present in tweets
+# Checking on the integer data, considering only the word 10 instead of ABC232, where I only want 10 but not ABC232
+df['numeric_count']=df['tweets'].apply(lambda x:len(re.findall(r'\b\d+\b',x)))
+print(df.sample(5))
+
+## 8. UPPER case words count
+print('--'*70)
+print('Counting the Upper case words count')
+# Straight forward code check whether the word in a tweet is upper case and then count the number of words 
+df['uppercase_count']= df['tweets'].apply(lambda x:len([word for word in x.split() if x.isupper()]))
+print(df[df['uppercase_count']>1].sample(5))
+
+### The first part A(General Feature Extraction is done)
+
+# B PREPROCESSING AND CLEANING 
+## 9 Lower case Conversion
+
+
+# Some of the tweets might have more than two spaces so we will using it to convert it into one space and then apply lower method
+# Since we are preprocessing the data and not extracting any features, we will apply the changes to the tweets column 
+print('--'*70)
+df['tweets'] = df['tweets'].apply(lambda x: re.sub('\s+',' ',x).lower())
+print(df.sample(5))
+
+## 10. Contraction to Expansion
+
