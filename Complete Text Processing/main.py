@@ -132,4 +132,75 @@ df['tweets'] = df['tweets'].apply(lambda x: re.sub('\s+',' ',x).lower())
 print(df.sample(5))
 
 ## 10. Contraction to Expansion
+# The contractions.json file is required since we will be dealing with words let's and it's full form is let us, where it has the all those type of words in it.
+import json 
+contractions = json.load(open('contractions.json'))
 
+# Every contraction word is in lower case so it might not get the values such I'm where 'I' is in capital form. We have to convert these into lower form.
+# Let us modify the tweets where the contracted words are in the full form
+
+df['tweets'] = df['tweets'].apply(lambda x :" ".join([contractions.get(word.lower(),word) for word in x.split()]))
+# Here we are splitting the word and converting it into lower form, then we are getting the value of that word if it is contracted or we are giving it default value. IT IS THE REASON WHY WE ARE DOING contractions.get(word.lower(), word) where the second "word" is for default value
+
+## 11. Count and Remove Emails 
+print("--"*70)
+# we will use regex pattern to find the emails in the tweets column (choll@gmail.com, choll@gmail.co.in)
+pattern = r'\b[A-Za-z0-9_%+-]+@[A-Za-z0-9-.]+\.[A-Z|a-z]{2,}\b' # Make sure that you use '-' only at the end if you are trying to find the character since '-' can also be interpreted as range.
+# We will use re.findall() method to find the emails and then apply it using a lambda function 
+# Creating a new columns 'emails' in the dataframe to get the emails and joining it with ","
+
+df['emails']=df['tweets'].apply(lambda x: ",".join(re.findall(pattern=pattern,string=x)))
+print('Counting the number of emails we have in the dataframe')
+print(df['emails'].value_counts())
+# Now since we are having ',' in the emails column like (email1, email2) we can use the count of ',' and then get the count in different column 'email_counts'
+df['email_counts'] = df['emails'].apply(lambda x:x.count(',')+1 if len(x)>0 else 0)
+# Let us take out the emails from the tweet and replace it with normal '' 
+df['tweets'] = df['tweets'].apply(lambda x : re.sub(pattern,'',x))
+print(df.head())
+
+## 12. Count and Remove URLs
+# If there is any URL in the tweets column, count them and remove them from the tweets
+# We might have hhtps:google.com or www.google.com, the pattern is 
+print("--"*70)
+pattern = r'http\S+ | www\.\S+'
+# Creating a new column to get the urls in a list 
+df['urls'] = df['tweets'].apply(lambda x : re.findall(pattern,x))
+# Getting the value counts of each urls 
+print('The count of each urls')
+print(df['urls'].value_counts())
+#Creating a new column for the count of urls 
+df['urls_counts'] = df['urls'].apply(lambda x: len(x))
+
+# Since we got the urls from the tweets, it is time to remove them from the tweets column 
+print('Removing the urls from the tweets column ')
+df['tweets'] = df['tweets'].apply(lambda x : re.sub(pattern, '',x))
+
+
+## 13. Remove RT
+# Remove the retweets 
+print("--"*70)
+pattern = r'\bRT @\w+' # RT means here is the retweet
+print('Checking whether a tweet has a retweet')
+df['is_retweet'] = df['tweets'].apply(lambda x: bool(len(re.findall(pattern,x))))
+
+# There is no retweets in the data, if we have any retweets, here is how you can remove them
+print('Removing the retweets')
+df['tweets']=df['tweets'].apply(lambda x: re.sub(pattern, '',x))
+
+
+# 14. Remove HTML tags if present in the data(Tweets)
+from bs4 import BeautifulSoup # you also need to install lxml parcel since we will be using it in beautifulsoup
+print("--"*70)
+# Removing the tags if present
+print('Removing HTML tags(p) if present and getting only the text')
+df['tweets'] = df['tweets'].apply(lambda x: BeautifulSoup('<p>'+x+'</p>','lxml').get_text())
+
+#15. Remove Accented Characters
+## What is an Accented Characters
+## These are a special characters in english where it is derived from ancient greek language
+import unicodedata
+print('--'*70)
+print('Normalizing the tweets column to replace the accented characters with it\'s adjacent characters in ascii')
+df['tweets'] = df['tweets'].apply(lambda x: unicodedata.normalize('NFKD',x).encode('ascii','ignore').decode('utf-8','ignore'))
+
+## 16. Special Chars removal and punctuation removal 
