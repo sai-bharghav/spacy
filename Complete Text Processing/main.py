@@ -203,4 +203,29 @@ print('--'*70)
 print('Normalizing the tweets column to replace the accented characters with it\'s adjacent characters in ascii')
 df['tweets'] = df['tweets'].apply(lambda x: unicodedata.normalize('NFKD',x).encode('ascii','ignore').decode('utf-8','ignore'))
 
+
+
 ## 16. Special Chars removal and punctuation removal 
+# Removing the @,# or any other special characters mentioned in the tweets column using regex and the pattern is below
+pattern = r'@\w+'# This one is for removing
+print('--'*70)
+print('Removing mentions in the tweets column')
+df['tweets'] = df['tweets'].apply(lambda x :re.sub(pattern,'',x).strip())# .strip() is or removing all the leading or lagging spaces after subbing 
+print('Removing the special characters using regex')
+pattern = r'[^\w\s]' #this one is only for removing special characters
+df['tweets'] = df['tweets'].apply(lambda x :re.sub(pattern,'',x).strip())
+
+## 17. Remove Repeated Characters
+# We might have so much repeated characters in the data where we will be having like 'awwwwwwwwwwwwww' where we have to remove it and make it single to 'aw
+print('--'*70)
+pattern = r'(.)\1+'
+
+print('Removing extra characters (repeated)')
+df['tweets'] = df['tweets'].apply(lambda x: re.sub(pattern, r'\1\1',x))# \1\1 is for replacing awwwwwwwww into aww(2'w')
+
+
+## 18. Remove Stop words 
+print('--'*70)
+print('Removing the stop words in the tweets column and storing it in a column')# Creating a column tweets_no_stop_words
+df['tweets_no_stop_words']= df['tweets'].apply(lambda x: " ".join([word for word in x.split() if word not in stopwords]))
+
