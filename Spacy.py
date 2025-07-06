@@ -1,4 +1,5 @@
 import spacy
+from prettytable import PrettyTable
 nlp = spacy.load('en_core_web_md')
 
 text = "Hello Bharghav, try to be good and learn spacy.You are 26 years old. You can't be that lazy"
@@ -26,3 +27,11 @@ for token in doc:
     # print(token,'--->',token.like_num)
     if token.like_num:
         print(token,'is a number\nUsed ".like_num" field to determine this')
+
+
+table = PrettyTable()
+table.field_names=['token','is_alpha','is_punct','like_num']
+for token in doc:
+    table.add_row([token.text,token.is_alpha,token.is_punct,token.like_num])
+
+print(table)

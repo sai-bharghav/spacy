@@ -1,7 +1,4 @@
 import re
-# Ctrl + enter is the shortcut
-
-
 # BASIC REGEX PYTHON
 text = "hello world!!! python is a beautiful language! It is good to learn and would be useful from 2020"
 pattern = 'hello'
@@ -52,4 +49,3 @@ print('Basic email search pattern result using findall() method',result)
 pattern = '\d+'
 result = re.findall(pattern=pattern, string = text)
 print('Getting all the numbers using findall() method',result)
-

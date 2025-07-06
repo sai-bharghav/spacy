@@ -1,0 +1,5 @@
+Environment 
+
+conda activate spacy-venv
+
+Use "python -m spacy download en_core_web_md" command to download the medium model through terminal 
