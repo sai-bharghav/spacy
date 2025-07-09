@@ -229,3 +229,27 @@ print('--'*70)
 print('Removing the stop words in the tweets column and storing it in a column')# Creating a column tweets_no_stop_words
 df['tweets_no_stop_words']= df['tweets'].apply(lambda x: " ".join([word for word in x.split() if word not in stopwords]))
 
+print(df.head(1))
+
+## 19. Convert the base or root form of word
+import spacy
+
+nlp = spacy.load('en_core_web_lg')
+
+# Let us create a function for lemmatizing each word where you only lemmatize the word if the word is NOUN or VERB
+def lemmatize_noun_verb(x):
+    doc = nlp(x)
+    tokens = []
+    for token in doc:
+        if token.pos_ in ['NOUN','VERB']:
+            tokens.append(token.lemma_)
+        else:
+            tokens.append(token.text)
+    x = " ".join(tokens)
+    pattern = r'\s\.'
+    x = re.sub(pattern,'.',x)
+    return x
+
+print('COnverting the NOUN nad VERB and storing it in a "base_tweets" column')
+
+df['base_tweets']=df['tweets'].apply(lambda x:lemmatize_noun_verb(x))
