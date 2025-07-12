@@ -253,3 +253,29 @@ def lemmatize_noun_verb(x):
 print('COnverting the NOUN nad VERB and storing it in a "base_tweets" column')
 
 df['base_tweets']=df['tweets'].apply(lambda x:lemmatize_noun_verb(x))
+
+
+## 20. Common words removal 
+# Let me get the common words on the column with no stopwords
+# Now let us import counter to count the number of words 
+
+from collections import Counter
+# Convert all tweets with no stopwords into a sentence and store it
+x = ' '.join(df['tweets_no_stop_words'].tolist())
+words = x.split()
+
+word_freq = Counter(words)
+
+top10 =[word for word in word_freq.most_common(10)]# Getting the top 10 words
+print('Creating a column with no common words in the tweet')
+
+df['no_common_tweets'] = df['tweets'].apply(lambda x : ' '.join([word for word in x.split() if word not in top10]))
+
+## 21. Rare words Removal
+# Let us take out the last 10 rare words 
+
+least10 = [word[0] for word in word_freq.most_common()[-11:]]
+print('Creating a column with no common least words in the tweet')
+
+df['no_least_tweets'] = df['tweets'].apply(lambda x: ' '.join([word for word in x.split() if word not in least10]))
+
