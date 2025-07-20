@@ -90,18 +90,18 @@ print('Getting the length of the stop words in the tweets column (taking stopwor
 print(df['tweets'].apply(lambda x:len([word for word in x.lower().split() if word in stopwords]))) ## ALWAYS REMEMBER TO CONVERT EVERYTHING INTO LOWER CASE
 df['stop_words_len']=df['tweets'].apply(lambda x:len([word for word in x.lower().split() if word in stopwords]))
 print('Seeing the sample of the dataframe')
-print(df.sample(5))
+
 
 ## 6. Count Hashtags and Mentions
 print("--"*70)
 print('Creating a column hashtag_count and mentions_count in the dataframe suing regex')
 df['hashtag_counts']=df['tweets'].apply(lambda x:len(re.findall(r'#\w+',x)))# Using re.findall() we give the pattern saying to get the word after '#' character
 df['mentions_count']=df['tweets'].apply(lambda x:len(re.findall(r'@\w+',x)))# Using re.findall() we give the pattern saying to get the word after '@' character
-print(df.head())
+
 
 print('Check the rows which have hastag_count greater than 0 or mentions_count greater than 0')
 print('--'*70)
-print(df[(df['hashtag_counts']>0) | (df['mentions_count']>0) ])
+
 
 
 ## 7. If numeric digits present in tweets
@@ -110,14 +110,14 @@ print('Checking whether if integer data is present in tweets')
 # Using re.findall() we can get the match and then we can count the number of times it is present in tweets
 # Checking on the integer data, considering only the word 10 instead of ABC232, where I only want 10 but not ABC232
 df['numeric_count']=df['tweets'].apply(lambda x:len(re.findall(r'\b\d+\b',x)))
-print(df.sample(5))
+
 
 ## 8. UPPER case words count
 print('--'*70)
 print('Counting the Upper case words count')
 # Straight forward code check whether the word in a tweet is upper case and then count the number of words 
 df['uppercase_count']= df['tweets'].apply(lambda x:len([word for word in x.split() if x.isupper()]))
-print(df[df['uppercase_count']>1].sample(5))
+
 
 ### The first part A(General Feature Extraction is done)
 
@@ -129,7 +129,7 @@ print(df[df['uppercase_count']>1].sample(5))
 # Since we are preprocessing the data and not extracting any features, we will apply the changes to the tweets column 
 print('--'*70)
 df['tweets'] = df['tweets'].apply(lambda x: re.sub('\s+',' ',x).lower())
-print(df.sample(5))
+
 
 ## 10. Contraction to Expansion
 # The contractions.json file is required since we will be dealing with words let's and it's full form is let us, where it has the all those type of words in it.
@@ -156,7 +156,7 @@ print(df['emails'].value_counts())
 df['email_counts'] = df['emails'].apply(lambda x:x.count(',')+1 if len(x)>0 else 0)
 # Let us take out the emails from the tweet and replace it with normal '' 
 df['tweets'] = df['tweets'].apply(lambda x : re.sub(pattern,'',x))
-print(df.head())
+
 
 ## 12. Count and Remove URLs
 # If there is any URL in the tweets column, count them and remove them from the tweets
@@ -229,12 +229,12 @@ print('--'*70)
 print('Removing the stop words in the tweets column and storing it in a column')# Creating a column tweets_no_stop_words
 df['tweets_no_stop_words']= df['tweets'].apply(lambda x: " ".join([word for word in x.split() if word not in stopwords]))
 
-print(df.head(1))
 
 ## 19. Convert the base or root form of word
 import spacy
 
-nlp = spacy.load('en_core_web_lg')
+nlp = spacy.load('en_core_web_sm') # Load the small model of spacy, you can also use en_core_web_md or en_core_web_lg for medium and large models respectively
+# If you don't have the model, you can download it using the command: python -m spacy download en_core_web_sm
 
 # Let us create a function for lemmatizing each word where you only lemmatize the word if the word is NOUN or VERB
 def lemmatize_noun_verb(x):
@@ -250,7 +250,7 @@ def lemmatize_noun_verb(x):
     x = re.sub(pattern,'.',x)
     return x
 
-print('COnverting the NOUN nad VERB and storing it in a "base_tweets" column')
+print('Converting the NOUN and VERB and storing it in a "base_tweets" column')
 
 df['base_tweets']=df['tweets'].apply(lambda x:lemmatize_noun_verb(x))
 
@@ -270,6 +270,7 @@ top10 =[word for word in word_freq.most_common(10)]# Getting the top 10 words
 print('Creating a column with no common words in the tweet')
 
 df['no_common_tweets'] = df['tweets'].apply(lambda x : ' '.join([word for word in x.split() if word not in top10]))
+print(df)
 
 ## 21. Rare words Removal
 # Let us take out the last 10 rare words 
@@ -279,3 +280,47 @@ print('Creating a column with no common least words in the tweet')
 
 df['no_least_tweets'] = df['tweets'].apply(lambda x: ' '.join([word for word in x.split() if word not in least10]))
 
+
+## 22. Word Cloud Visualization 
+#pip install wordcloud
+# from wordcloud import WordCloud
+# import matplotlib.pyplot as plt
+
+# x = ' '.join(df['tweets_no_stop_words'].to_list())
+# cloud = WordCloud(width=500,height=500).generate(x)
+
+# print('Showing Word Cloud')
+# plt.figure(figsize=(10,5))
+# plt.imshow(cloud,interpolation='bilinear')
+# plt.colorbar() 
+# plt.show()
+
+## 23. Spelling Correction 
+# pip install -U textblob==0.18.0.post0
+# python -m textblob.download_corpora
+
+from textblob import Word
+
+'''
+The textblob has a good way of finding the right spelling based on probabilities, we can say 
+x='Loooove' and when you type w=Word(x) and x.spellcheck() it give the right word along with probabilities
+
+In the below method, where a particular sentence is sent as an argument where we are creating a dummy list 'words' and the input argument
+will be split into spaces(converting into lists) then making sure to append the right word of each word(w) and joining it later
+'''
+
+def correct(x):
+    words =[] 
+    for word in x.split():
+        w = Word(x)
+        words.append(w.correct())
+
+    return ' '.join(words)
+
+# Now we can apply the correct function to the tweets column
+print('--'*70)
+print('Correcting the spelling of the tweets column for 10 samples')
+
+data=df.sample(10,random_state=0)
+data['correct_tweets'] = data['tweets'].apply(lambda x: correct(x))
+print(data[data['tweets']!=data['correct_tweets']])
